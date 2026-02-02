@@ -78,6 +78,7 @@ export interface MarketData {
   closeTime: string;
   category: string;
   imageUrl: string;
+  isProvisional?: boolean;
 }
 
 export interface OrderbookData {

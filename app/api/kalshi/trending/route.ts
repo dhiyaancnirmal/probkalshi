@@ -4,107 +4,73 @@ import type { MarketData } from "@/lib/types";
 
 const KALSHI_API_BASE = "https://api.elections.kalshi.com/trade-api/v2";
 
-// Curated list of interesting/popular event tickers
-const FEATURED_EVENTS = [
-  "KXELONMARS-99",
-  "KXNEWPOPE-70",
-  "KXCOLONIZEMARS-50",
-  "KXWARMING-50",
-  "KXMARSVRAIL-50",
-  "KXPERSONPRESMAM-45",
-];
-
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    // Strategy 1: Fetch markets with volume filter
-    const marketsResponse = await fetch(
-      `${KALSHI_API_BASE}/markets?limit=50&status=open`,
-      {
-        headers: { Accept: "application/json" },
-        next: { revalidate: 60 },
-      }
-    );
+    const url = new URL(request.url);
+    const seriesTicker = url.searchParams.get("series_ticker");
 
-    let allMarkets: MarketData[] = [];
+    // Fetch events with nested markets, exclude multivariate events
+    let eventsUrl = `${KALSHI_API_BASE}/events?with_nested_markets=true&limit=100&status=open`;
 
-    if (marketsResponse.ok) {
-      const marketsData = await marketsResponse.json();
-      const markets = marketsData.markets || [];
-      
-      // Filter for markets with reasonable titles and some activity
-      const goodMarkets = markets
-        .map((m: Record<string, unknown>) => normalizeMarket(m))
-        .filter((m: MarketData) => {
-          // Filter out sports multi-game extended markets (they have weird titles)
-          if (m.ticker.includes("MULTIGAME")) return false;
-          // Filter out markets with very long/concatenated titles
-          if (m.title.includes(",yes ") || m.title.includes(",no ")) return false;
-          // Keep markets with activity or interesting titles
-          return m.status === "open" && m.title.length < 100;
-        });
-
-      allMarkets.push(...goodMarkets);
+    // Add series filter if specified (for category selection)
+    if (seriesTicker && seriesTicker !== "all") {
+      eventsUrl += `&series_ticker=${encodeURIComponent(seriesTicker)}`;
     }
 
-    // Strategy 2: Fetch specific interesting events
-    const eventPromises = FEATURED_EVENTS.map(async (eventTicker) => {
-      try {
-        const res = await fetch(
-          `${KALSHI_API_BASE}/events/${eventTicker}`,
-          {
-            headers: { Accept: "application/json" },
-            next: { revalidate: 60 },
-          }
-        );
-        if (!res.ok) return null;
-        const data = await res.json();
-        
-        // Get markets from the event
-        const marketsRes = await fetch(
-          `${KALSHI_API_BASE}/markets?event_ticker=${eventTicker}&limit=5`,
-          {
-            headers: { Accept: "application/json" },
-            next: { revalidate: 60 },
-          }
-        );
-        if (!marketsRes.ok) return null;
-        const marketsData = await marketsRes.json();
-        
-        return (marketsData.markets || []).map((m: Record<string, unknown>) => ({
-          ...normalizeMarket(m),
-          // Use event title if market title is unclear
-          title: m.title || data.event?.title || m.ticker,
-        }));
-      } catch {
-        return null;
-      }
+    const eventsResponse = await fetch(eventsUrl, {
+      headers: { Accept: "application/json" },
+      next: { revalidate: 60 },
     });
 
-    const eventResults = await Promise.all(eventPromises);
-    for (const markets of eventResults) {
-      if (markets) {
-        allMarkets.push(...markets);
+    if (!eventsResponse.ok) {
+      throw new Error(`Kalshi API error: ${eventsResponse.status}`);
+    }
+
+    const eventsData = await eventsResponse.json();
+    const events = eventsData.events || [];
+
+    // Extract all markets from all events
+    let allMarkets: MarketData[] = [];
+
+    for (const event of events) {
+      if (event.markets && Array.isArray(event.markets)) {
+        // Add event's category to each market
+        const marketsWithCategory = event.markets.map((m: Record<string, unknown>) => {
+          const normalized = normalizeMarket(m);
+          // Add event category to market data
+          return {
+            ...normalized,
+            category: event.category || "",
+          };
+        });
+        allMarkets.push(...marketsWithCategory);
       }
     }
+
+    // Filter out multivariate/combo markets by checking if they have mve_collection_ticker
+    // Markets with mve_collection_ticker are combo/multi-market events
+    const binaryMarkets = allMarkets.filter((m) => {
+      const kalshiMarket = m as unknown as { mve_collection_ticker?: string };
+      return !kalshiMarket.mve_collection_ticker;
+    });
 
     // Deduplicate by ticker
     const seen = new Set<string>();
-    const uniqueMarkets = allMarkets.filter((m) => {
+    const uniqueMarkets = binaryMarkets.filter((m) => {
       if (seen.has(m.ticker)) return false;
       seen.add(m.ticker);
       return true;
     });
 
-    // Sort by volume (descending), then by title length (shorter = cleaner)
-    const sortedMarkets = uniqueMarkets
-      .sort((a, b) => {
-        const volDiff = (b.volume || 0) - (a.volume || 0);
-        if (volDiff !== 0) return volDiff;
-        return a.title.length - b.title.length;
-      })
-      .slice(0, 12);
+    // Sort by 24h volume (descending) for trending relevance
+    const sortedMarkets = uniqueMarkets.sort((a, b) => {
+      const volA = (a as any).volume_24h ?? 0;
+      const volB = (b as any).volume_24h ?? 0;
+      return volB - volA;
+    });
 
-    return NextResponse.json({ markets: sortedMarkets });
+    // Return top 12 markets
+    return NextResponse.json({ markets: sortedMarkets.slice(0, 12) });
   } catch (error) {
     console.error("Error fetching trending markets:", error);
     return NextResponse.json(

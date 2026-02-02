@@ -83,7 +83,27 @@ export function normalizeMarket(kalshi: KalshiMarket): MarketData {
   // Use last_price for the yes price, calculate no price as 100 - yes
   const yesPrice = kalshi.last_price ?? kalshi.yes_bid ?? 0;
   const noPrice = 100 - yesPrice;
+
+  // Map Kalshi status to our simplified status
+  // Kalshi status values: initialized, inactive, active, closed, determined, disputed, amended, finalized
+  let normalizedStatus: "open" | "closed" | "settled";
   
+  if (kalshi.status === "active") {
+    normalizedStatus = "open";
+  } else if (kalshi.status === "closed") {
+    normalizedStatus = "closed";
+  } else if (kalshi.status === "determined") {
+    normalizedStatus = "settled";
+  } else {
+    // For settled markets with a result, show the result
+    if (kalshi.result === "yes" || kalshi.result === "no") {
+      normalizedStatus = "settled";
+    } else {
+      // Default to closed for other statuses
+      normalizedStatus = "closed";
+    }
+  }
+
   return {
     ticker: kalshi.ticker,
     title: kalshi.title,
@@ -92,12 +112,13 @@ export function normalizeMarket(kalshi: KalshiMarket): MarketData {
     noPrice,
     volume: kalshi.volume,
     openInterest: kalshi.open_interest,
-    status: kalshi.status === "active" ? "open" : kalshi.status,
+    status: normalizedStatus,
     result: kalshi.result,
     eventTicker: kalshi.event_ticker,
     closeTime: kalshi.close_time,
     category: kalshi.category || "",
     imageUrl: kalshi.image_url || "",
+    isProvisional: kalshi.is_provisional || false,
   };
 }
 
