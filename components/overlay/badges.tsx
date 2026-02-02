@@ -1,7 +1,6 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import Image from "next/image";
 
 interface KalshiBadgeProps {
   className?: string;
@@ -18,14 +17,8 @@ export function KalshiBadge({ className }: KalshiBadgeProps) {
         className
       )}
     >
-      <Image
-        src="/kalshi-logo.png"
-        alt="Kalshi"
-        width={16}
-        height={16}
-        className="rounded-sm"
-      />
-      <span>via <span className="text-[#09C285] font-medium">Kalshi</span></span>
+      <span>via</span>
+      <span className="text-[#09C285] font-medium">Kalshi</span>
     </a>
   );
 }

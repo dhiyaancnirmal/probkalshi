@@ -231,8 +231,7 @@ export default function HomePage() {
                 <div
                   className="flex items-center h-full"
                   style={{
-                    animationPlayState: isPaused ? "paused" : "running",
-                    animation: `scroll ${tickerSpeed}s linear infinite`,
+                    animation: isPaused ? "none" : `scroll ${tickerSpeed}s linear infinite`,
                     width: "fit-content",
                   }}
                 >

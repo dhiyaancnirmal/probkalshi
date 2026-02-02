@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import Image from "next/image";
 import type { MarketData } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -69,18 +68,9 @@ export function FeaturedMarkets({ onSelectMarket }: FeaturedMarketsProps) {
       {/* Header with Kalshi branding */}
       <div className="flex items-center border-b border-gray-800">
         <div className="flex items-center gap-2 px-4 py-3 border-r border-gray-800 bg-gray-900/80">
-          <Image
-            src="/kalshi-logo.png"
-            alt="Kalshi"
-            width={20}
-            height={20}
-            className="rounded"
-          />
-          <span className="text-sm font-medium">
-            <span className="text-[#09C285]">Kalshi</span>
-            <span className="text-gray-400"> Live Markets</span>
-          </span>
-          <span className="w-2 h-2 bg-[#09C285] rounded-full animate-pulse" />
+          <span className="text-sm font-semibold text-[#09C285]">Kalshi</span>
+          <span className="text-sm text-gray-400">Live Markets</span>
+          <span className="w-2 h-2 bg-[#09C285] rounded-full" />
         </div>
         <div className="flex-1 px-4 py-3">
           <span className="text-xs text-gray-500">
@@ -115,8 +105,8 @@ export function FeaturedMarkets({ onSelectMarket }: FeaturedMarketsProps) {
         </div>
 
         {/* Gradient overlays */}
-        <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-gray-900/90 to-transparent pointer-events-none z-10" />
-        <div className="absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-gray-900/90 to-transparent pointer-events-none z-10" />
+        <div className="absolute inset-y-0 left-0 w-4 pointer-events-none" />
+        <div className="absolute inset-y-0 right-0 w-4 pointer-events-none" />
       </div>
     </div>
   );

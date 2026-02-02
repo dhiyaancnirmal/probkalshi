@@ -9,11 +9,42 @@ export async function GET(request: Request) {
     const url = new URL(request.url);
     const seriesTicker = url.searchParams.get("series_ticker");
 
+    // List of known real series tickers (exclude test/demo series)
+    const REAL_SERIES_TICKERS = [
+      "KXHIGHNY",
+      "KXHIGHNQM",
+      "KXINFLATION",
+      "KXGDP",
+      "KXUNEMPLOYMENT",
+      "KXHOUSING",
+      "KXRETAILSALES",
+      "KXCONSUMERSENTIMENT",
+      "KXGASPRICES",
+      "KXOILPRICES",
+      "KXELONMARS",
+      "KXNEWPOPE",
+      "KXPERSONPRESMAM",
+      "KXPERSONPRESVP",
+      "KXPERSONPRESSOBAMA",
+      "KXPERSONPRESSHARRIS",
+      "KXPERSONPRESSJFK",
+      "KXPERSONPRESSBIDEN",
+      "KXPERSONPRESSPENCE",
+      "KXPERSONPRESSCLINTON",
+      "KXPERSONPRESSREAGAN",
+      "KXPERSONPRESSBUSH",
+      "KXPERSONPRESSFORD",
+      "KXPERSONPRESSHW",
+      "KXPERSONPRESSNIXON",
+      "KXPERSONPRESSTRUMP",
+    ];
+
     // Fetch events with nested markets, exclude multivariate events
     let eventsUrl = `${KALSHI_API_BASE}/events?with_nested_markets=true&limit=100&status=open`;
 
     // Add series filter if specified (for category selection)
-    if (seriesTicker && seriesTicker !== "all") {
+    // Only filter by real series tickers, or if "all" then don't filter
+    if (seriesTicker && seriesTicker !== "all" && REAL_SERIES_TICKERS.includes(seriesTicker)) {
       eventsUrl += `&series_ticker=${encodeURIComponent(seriesTicker)}`;
     }
 
@@ -63,9 +94,14 @@ export async function GET(request: Request) {
     });
 
     // Sort by 24h volume (descending) for trending relevance
+    // Markets without 24h volume should be sorted last (lower priority)
     const sortedMarkets = uniqueMarkets.sort((a, b) => {
       const volA = (a as any).volume_24h ?? 0;
       const volB = (b as any).volume_24h ?? 0;
+      if (volA === volB) {
+        // Equal volume: sort by total volume instead
+        return (b as any).volume - (a as any).volume;
+      }
       return volB - volA;
     });
 
