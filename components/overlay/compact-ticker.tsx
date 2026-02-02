@@ -85,7 +85,7 @@ export function CompactTicker({
 
       {/* Kalshi label */}
       <span className={subtextClass}>·</span>
-      <span className={cn("text-xs uppercase tracking-wide", subtextClass)}>
+      <span className="text-xs uppercase tracking-wide text-[#09C285] font-medium">
         Kalshi
       </span>
     </div>

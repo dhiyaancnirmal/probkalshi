@@ -93,7 +93,7 @@ export function SidePanel({
 
       {/* Footer */}
       <div className={cn("text-xs space-y-1", subtextClass)}>
-        <div className="uppercase tracking-wide">Kalshi</div>
+        <div className="uppercase tracking-wide text-[#09C285] font-medium">Kalshi</div>
         {lastTrade && !isSettled && (
           <div>{formatRelativeTime(lastTrade.createdTime)}</div>
         )}

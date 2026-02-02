@@ -10,6 +10,7 @@ import {
   OutputPanel,
   LivePreview,
 } from "@/components/configurator";
+import { FeaturedMarkets } from "@/components/featured-markets";
 import type { MarketData, OverlayPreset, OverlayTheme } from "@/lib/types";
 import { DEFAULT_OVERLAY_CONFIG } from "@/lib/types";
 
@@ -72,11 +73,6 @@ export default function HomePage() {
     setError(errorMessage);
   };
 
-  const handleTryExample = (url: string) => {
-    setInputValue(url);
-    resolveUrl(url);
-  };
-
   return (
     <main className="min-h-screen">
       {/* Hero Section */}
@@ -106,7 +102,7 @@ export default function HomePage() {
           </h1>
 
           <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-            Free OBS overlay for Kalshi prediction markets. Paste a URL, get a
+            Free OBS overlay for <span className="text-[#09C285] font-medium">Kalshi</span> prediction markets. Paste a URL, get a
             live ticker. Real-time updates, animated prices, transparent background.
           </p>
         </div>
@@ -131,29 +127,14 @@ export default function HomePage() {
             </div>
           </div>
         )}
-
-        {/* Example links */}
-        {!market && (
-          <div className="text-center text-sm text-gray-500 mb-8">
-            <span>Try: </span>
-            <button
-              onClick={() => handleTryExample("KXELONMARS-99")}
-              disabled={isLoading}
-              className="text-[#09C285] hover:underline disabled:opacity-50"
-            >
-              Elon Musk visits Mars
-            </button>
-            <span className="mx-2">·</span>
-            <button
-              onClick={() => handleTryExample("KXNEWPOPE-70")}
-              disabled={isLoading}
-              className="text-[#09C285] hover:underline disabled:opacity-50"
-            >
-              Next Pope
-            </button>
-          </div>
-        )}
       </div>
+
+      {/* Featured Markets Ticker */}
+      {!market && (
+        <div className="max-w-5xl mx-auto px-4 pb-12">
+          <FeaturedMarkets onSelectMarket={(ticker) => resolveUrl(ticker)} />
+        </div>
+      )}
 
       {/* Configurator (shows after market is selected) */}
       {market && (
@@ -234,12 +215,12 @@ export default function HomePage() {
       <footer className="border-t border-gray-800 py-8">
         <div className="max-w-4xl mx-auto px-4 text-center text-sm text-gray-500">
           <p className="mb-2">
-            Not affiliated with Kalshi. Market data provided by{" "}
+            Not affiliated with <span className="text-[#09C285] font-medium">Kalshi</span>. Market data provided by{" "}
             <a
               href="https://kalshi.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[#09C285] hover:underline"
+              className="text-[#09C285] font-medium hover:underline"
             >
               Kalshi
             </a>

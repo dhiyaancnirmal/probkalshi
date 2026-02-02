@@ -25,7 +25,7 @@ export function KalshiBadge({ className }: KalshiBadgeProps) {
         height={16}
         className="rounded-sm"
       />
-      <span>via Kalshi</span>
+      <span>via <span className="text-[#09C285] font-medium">Kalshi</span></span>
     </a>
   );
 }

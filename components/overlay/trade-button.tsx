@@ -27,7 +27,7 @@ export function TradeButton({ ticker, accent = "09C285", className }: TradeButto
         color: "#000",
       }}
     >
-      Trade on Kalshi
+      Trade on <span className="font-semibold">Kalshi</span>
       <svg
         className="w-3 h-3"
         fill="none"
