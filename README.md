@@ -1,36 +1,66 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# probkalshi.com
 
-## Getting Started
+Live Kalshi odds overlay for OBS streamers.
 
-First, run the development server:
+## What is this?
+
+A free tool that turns any Kalshi market URL into an OBS-ready overlay widget with live updating prices.
+
+**The Polymarket ticker (`ticker.polymarket.com`) — but for Kalshi.**
+
+## How it works
+
+1. Paste a Kalshi market URL
+2. Pick a layout preset (Big Card, Compact Ticker, Side Panel)
+3. Copy the overlay URL
+4. Add it as a Browser Source in OBS
+5. Done — odds update live automatically
+
+## Tech Stack
+
+- **Next.js 16** (App Router, Turbopack)
+- **React 19**
+- **Tailwind CSS 4**
+- **TypeScript**
+- **Vercel** deployment
+
+No database. No auth. Config lives in URL params.
+
+## Development
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## API Routes
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+All routes proxy to Kalshi's public REST API (no auth required):
 
-## Learn More
+- `GET /api/kalshi/market/[ticker]` — Market data
+- `GET /api/kalshi/orderbook/[ticker]` — Orderbook
+- `GET /api/kalshi/trades/[ticker]` — Latest trade
+- `GET /api/resolve?url=...` — Parse URL → market data
 
-To learn more about Next.js, take a look at the following resources:
+## Overlay URL Format
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+https://probkalshi.com/overlay?ticker=KXFEDCUT-26JAN-T0.5&preset=big-card&theme=transparent
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Query params:
+- `ticker` — Kalshi market ticker (required)
+- `preset` — `big-card` | `compact-ticker` | `side-panel`
+- `theme` — `transparent` | `dark` | `light`
+- `showTrade` — `true` | `false`
+- `showButton` — `true` | `false`
 
-## Deploy on Vercel
+## Deploy
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/YOUR_USERNAME/probkalshi)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## License
+
+MIT
